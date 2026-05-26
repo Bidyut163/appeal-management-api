@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles   Role[]   @relation("UserRoles")
+  appeals Appeal[] @relation("Appellant")
+}
+
+model Role {
+  id   Int      @id @default(autoincrement())
+  name RoleType @unique
+
+  users User[] @relation("UserRoles")
+}
+
+enum RoleType {
+  ADMIN
+  REGISTRAR
+  VERIFIER
+  APPELLANT
+}
+
+model Appeal {
+  id          Int          @id @default(autoincrement())
+  description String
+  status      AppealStatus @default(DRAFT)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  verifierComments  String?
+  registrarComments String?
+
+  appellantId Int
+  appellant   User @relation("Appellant", fields: [appellantId], references: [id])
+
+  payment           Payment?
+  
+}
+
+model Payment {
+  id        Int           @id @default(autoincrement())
+  orderId   String
+  amount    Int
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+
+  appealId Int    @unique
+  appeal   Appeal @relation(fields: [appealId], references: [id])
+}
+
+enum AppealStatus {
+  DRAFT
+  UNDER_VERIFICATION
+  WITH_REGISTRAR
+  REVERTED_TO_APPELLANT
+  UNDER_HEARING
+  CLOSED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
