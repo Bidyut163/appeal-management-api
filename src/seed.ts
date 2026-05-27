@@ -84,7 +84,7 @@ async function main() {
     });
 
     // Appellant
-    await prisma.user.upsert({
+    const appellant = await prisma.user.upsert({
         where: { email: 'appellant@example.com' },
         update: {},
         create: {
@@ -94,6 +94,33 @@ async function main() {
             roles: {
                 connect: [{ id: appellantRole!.id }],
             },
+        },
+    });
+
+    // -----------------------------
+    // Create appeal
+    // -----------------------------
+    const appeal = await prisma.appeal.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            description: 'This is the first appeal',
+            status: 'UNDER_VERIFICATION',
+            appellantId: appellant.id,
+        },
+    });
+
+    // -----------------------------
+    // Create appeal checklist
+    // -----------------------------
+
+    await prisma.appealChecklist.upsert({
+        where: { appealId: appeal.id },
+        update: {},
+        create: {
+            appealId: appeal.id,
+            complaintNumber: '231302',
+            sectionNumber: '44',
         },
     });
 
