@@ -41,7 +41,7 @@ export const createAppealChecklist = async (req: Request, res: Response) => {
 export const sendAppealToHearing = async (req: Request, res: Response) => {
     const appealId = Number(req.params.id);
 
-    const appeal = await sendAppealToHearingService(appealId);
+    const appeal = await sendAppealToHearingService(appealId, req.body);
 
     return res.status(StatusCodes.OK).json(appeal);
 };

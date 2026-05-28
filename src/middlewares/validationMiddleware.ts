@@ -14,8 +14,8 @@ export const validate = (
 
         if (!result.success) {
             const flattened = z.flattenError(result.error);
-            console.log('====================');
-            console.log(flattened);
+            // console.log('====================');
+            // console.log(flattened);
 
             return res.status(400).json({
                 message: 'Validation failed',

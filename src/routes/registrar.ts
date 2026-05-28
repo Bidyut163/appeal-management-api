@@ -19,6 +19,7 @@ import {
     appealIdParamSchema,
     createAppealChecklistSchema,
     revertAppealSchema,
+    sendToHearingSchema,
 } from '../validators/appealSchemas.js';
 
 // types
@@ -87,6 +88,7 @@ router.post(
 router.patch(
     '/:id/send-to-hearing',
     validate(appealIdParamSchema, 'params'),
+    validate(sendToHearingSchema),
     authenticateUser,
     authorizeRoles(RoleType.REGISTRAR),
     asyncHandler(sendAppealToHearing),

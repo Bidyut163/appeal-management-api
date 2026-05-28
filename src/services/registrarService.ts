@@ -4,9 +4,13 @@ import { prismaClient } from '../server.js';
 import { validateTransition } from '../utils/workflow.js';
 
 import * as z from 'zod';
-import type { createAppealChecklistSchema } from '../validators/appealSchemas.js';
+import type {
+    createAppealChecklistSchema,
+    sendToHearingSchema,
+} from '../validators/appealSchemas.js';
 
 type CreateAppealChecklistInput = z.infer<typeof createAppealChecklistSchema>;
+type SendToHearingInput = z.infer<typeof sendToHearingSchema>;
 
 export const getWithRegistrarAppealsService = async () => {
     const appeals = await prismaClient.appeal.findMany({
@@ -89,13 +93,23 @@ export const createAppealChecklistService = async (
     return checklist;
 };
 
-export const sendAppealToHearingService = async (appealId: number) => {
-    const appeal = await prismaClient.appeal.findUnique({
-        where: { id: appealId },
+export const sendAppealToHearingService = async (
+    appealId: number,
+    formData: SendToHearingInput,
+) => {
+    const appeal = await prismaClient.appeal.findFirst({
+        where: { id: appealId, status: AppealStatus.WITH_REGISTRAR },
+        include: {
+            appealChecklist: true,
+        },
     });
 
     if (!appeal) {
-        throw new NotFoundError('Appeal not found');
+        throw new NotFoundError('Appeal not found or not eligible for hearing');
+    }
+
+    if (!appeal.appealChecklist) {
+        throw new BadRequestError('Checklist required before hearing');
     }
 
     validateTransition(appeal.status, AppealStatus.UNDER_HEARING);
@@ -103,6 +117,7 @@ export const sendAppealToHearingService = async (appealId: number) => {
     const updatedAppeal = await prismaClient.appeal.update({
         where: { id: appealId },
         data: {
+            ...formData,
             status: AppealStatus.UNDER_HEARING,
         },
     });

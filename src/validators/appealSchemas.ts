@@ -43,3 +43,13 @@ export const createAppealChecklistSchema = z.object({
     complaintNumber: z.string(),
     sectionNumber: z.string(),
 });
+
+export const sendToHearingSchema = z
+    .object({
+        hearingDate: z.coerce.date(),
+        registrarComments: z
+            .string()
+            .trim()
+            .min(1, 'Registrar comment required'),
+    })
+    .strict();
