@@ -7,6 +7,7 @@ import { authorizeRoles } from '../middlewares/authorizeMiddleware.js';
 
 // controllers
 import {
+    createAppealChecklist,
     getWithRegistrarAppeal,
     getWithRegistrarAppeals,
     revertAppeal,
@@ -16,6 +17,7 @@ import {
 // validators
 import {
     appealIdParamSchema,
+    createAppealChecklistSchema,
     revertAppealSchema,
 } from '../validators/appealSchemas.js';
 
@@ -65,8 +67,21 @@ router.patch(
     asyncHandler(revertAppeal),
 );
 
+// @route POST api/v1/registrar/appeals/:id/checklist
+// @desc  Create the checklist for the appeal
+// @access Private/Only registrar
+
+router.post(
+    '/:id/checklist',
+    validate(appealIdParamSchema, 'params'),
+    validate(createAppealChecklistSchema),
+    authenticateUser,
+    authorizeRoles(RoleType.REGISTRAR),
+    asyncHandler(createAppealChecklist),
+);
+
 // @route PATCH api/v1/registrar/appeals/:id/send-to-hearing
-// @desc  Revert back an appeal to appellant
+// @desc  Send the appeal to hearing phase
 // @access Private/Only registrar
 
 router.patch(

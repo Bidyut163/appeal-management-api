@@ -38,3 +38,8 @@ export const revertAppealSchema = z
             .min(1, 'Registrar comment is required'),
     })
     .strict();
+
+export const createAppealChecklistSchema = z.object({
+    complaintNumber: z.string(),
+    sectionNumber: z.string(),
+});

@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import {
+    createAppealChecklistService,
     getWithRegistrarAppealService,
     getWithRegistrarAppealsService,
     revertAppealService,
@@ -27,6 +28,14 @@ export const revertAppeal = async (req: Request, res: Response) => {
     const appeal = await revertAppealService(appealId, registrarComment);
 
     return res.status(StatusCodes.OK).json(appeal);
+};
+
+export const createAppealChecklist = async (req: Request, res: Response) => {
+    const appealId = Number(req.params.id);
+
+    const checklist = await createAppealChecklistService(appealId, req.body);
+
+    return res.status(StatusCodes.CREATED).json(checklist);
 };
 
 export const sendAppealToHearing = async (req: Request, res: Response) => {
