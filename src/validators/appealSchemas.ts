@@ -39,10 +39,12 @@ export const revertAppealSchema = z
     })
     .strict();
 
-export const createAppealChecklistSchema = z.object({
-    complaintNumber: z.string(),
-    sectionNumber: z.string(),
-});
+export const createAppealChecklistSchema = z
+    .object({
+        complaintNumber: z.string(),
+        sectionNumber: z.string(),
+    })
+    .strict();
 
 export const sendToHearingSchema = z
     .object({

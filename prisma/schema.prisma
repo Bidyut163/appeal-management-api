@@ -51,7 +51,9 @@ model Appeal {
   appellantId Int
   appellant   User @relation("Appellant", fields: [appellantId], references: [id])
 
-  hearingDate DateTime?
+  // hearingDate DateTime?
+
+  hearings Hearing[]
 
   payment Payment?
 
@@ -71,6 +73,22 @@ model AppealChecklist  {
   updatedAt DateTime @updatedAt
 }
 
+model Hearing{
+  id Int @id @default(autoincrement())
+
+  appealId Int    
+  appeal   Appeal @relation(fields: [appealId], references: [id])
+
+  hearingNumber  Int
+  hearingDate    DateTime
+  status         HearingStatus @default(SCHEDULED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([appealId, hearingNumber])
+}
+
 model Payment {
   id        Int           @id @default(autoincrement())
   orderId   String
@@ -88,7 +106,7 @@ enum AppealStatus {
   WITH_REGISTRAR
   REVERTED_TO_APPELLANT
   UNDER_HEARING
-  CLOSED
+  DISPOSED
   REJECTED
 }
 
@@ -96,4 +114,9 @@ enum PaymentStatus {
   PENDING
   SUCCESS
   FAILED
+}
+
+enum HearingStatus {
+  SCHEDULED
+  COMPLETED
 }

@@ -28,6 +28,9 @@ export const getWithRegistrarAppealsService = async () => {
 export const getWithRegistrarAppealService = async (appealId: number) => {
     const appeal = await prismaClient.appeal.findFirst({
         where: { id: appealId, status: AppealStatus.WITH_REGISTRAR },
+        include: {
+            appealChecklist: true,
+        },
     });
 
     if (!appeal) {
@@ -114,13 +117,38 @@ export const sendAppealToHearingService = async (
 
     validateTransition(appeal.status, AppealStatus.UNDER_HEARING);
 
-    const updatedAppeal = await prismaClient.appeal.update({
-        where: { id: appealId },
-        data: {
-            ...formData,
-            status: AppealStatus.UNDER_HEARING,
-        },
+    // const updatedAppeal = await prismaClient.appeal.update({
+    //     where: { id: appealId },
+    //     data: {
+    //         ...formData,
+    //         status: AppealStatus.UNDER_HEARING,
+    //     },
+    // });
+
+    const { hearingDate, registrarComments } = formData;
+
+    const result = await prismaClient.$transaction(async (tx) => {
+        const updatedAppeal = await tx.appeal.update({
+            where: { id: appealId },
+            data: {
+                registrarComments,
+                status: AppealStatus.UNDER_HEARING,
+            },
+        });
+
+        const hearing = await tx.hearing.create({
+            data: {
+                hearingNumber: 1,
+                hearingDate,
+                appealId,
+            },
+        });
+
+        return {
+            updatedAppeal,
+            hearing,
+        };
     });
 
-    return updatedAppeal;
+    return result;
 };
