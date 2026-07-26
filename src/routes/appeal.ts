@@ -14,6 +14,7 @@ import {
     appealIdParamSchema,
 } from '../validators/appealSchemas.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { uploadAppealDocument } from '../middlewares/uploadMiddleware.js';
 
 const router: Router = Router();
 
@@ -36,9 +37,10 @@ router.get(
 // @access Private/Only appellant
 router.post(
     '/',
-    validate(createAppealSchema),
     authenticateUser,
     authorizeRoles(RoleType.APPELLANT),
+    uploadAppealDocument,
+    validate(createAppealSchema),
     asyncHandler(createAppeal),
 );
 

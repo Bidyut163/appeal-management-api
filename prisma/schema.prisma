@@ -38,9 +38,99 @@ enum RoleType {
   APPELLANT
 }
 
+// model Appeal {
+//   id          Int          @id @default(autoincrement())
+//   description String
+//   status      AppealStatus @default(DRAFT)
+//   createdAt   DateTime     @default(now())
+//   updatedAt   DateTime     @updatedAt
+
+//   verifierComments  String?
+//   registrarComments String?
+
+//   appellantId Int
+//   appellant   User @relation("Appellant", fields: [appellantId], references: [id])
+
+//   // hearingDate DateTime?
+
+//   hearings Hearing[]
+
+//   payment Payment?
+
+//   appealChecklist AppealChecklist?
+// }
+
 model Appeal {
   id          Int          @id @default(autoincrement())
-  description String
+  
+  // ---------------- Appellant ----------------
+  appellantName    String
+
+  appellantResidentialAddressLine1  String
+  appellantResidentialAddressLine2  String?
+  appellantResidentialLandmark      String?
+  appellantResidentialCity          String
+  appellantResidentialDistrict      String
+  appellantResidentialState         String
+  appellantResidentialCountry       String
+  appellantResidentialPinCode       String
+
+
+  appellantServiceAddressLine1      String
+  appellantServiceAddressLine2      String?
+  appellantServiceLandmark          String?
+  appellantServiceCity              String
+  appellantServiceDistrict          String
+  appellantServiceState             String
+  appellantServiceCountry           String
+  appellantServicePinCode           String
+
+  appellantMobileNumber             String
+  appellantEmailAddress             String
+
+  // ---------------- Respondent ----------------
+
+  respondentName                    String
+
+  respondentOfficeAddressLine1      String
+  respondentOfficeAddressLine2      String?
+  respondentOfficeLandmark          String?
+  respondentOfficeCity              String
+  respondentOfficeDistrict          String
+  respondentOfficeState             String
+  respondentOfficeCountry           String
+  respondentOfficePinCode           String
+
+  
+  respondentServiceAddressLine1     String
+  respondentServiceAddressLine2     String?
+  respondentServiceLandmark         String?
+  respondentServiceCity             String
+  respondentServiceDistrict         String
+  respondentServiceState            String
+  respondentServiceCountry          String
+  respondentServicePinCode          String
+  
+  
+  respondentMobileNumber            String
+  respondentEmailAddress            String
+  
+  // ---------------- APPEAL ----------------
+
+  projectRegistrationNumber         String?
+  
+  isFiledWithinLimitation           Boolean
+  delayReason                       String?
+  factsOfCase                       String
+  groundsOfAppeal                   String
+  reliefSought                      String
+  interimReliefRequested            String?
+  isMatterPendingInCourt            Boolean
+
+                   
+
+  // ---------------- Workflow ----------------
+
   status      AppealStatus @default(DRAFT)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -58,6 +148,30 @@ model Appeal {
   payment Payment?
 
   appealChecklist AppealChecklist?
+
+  appealDocuments  AppealDocument[] 
+}
+
+model AppealDocument {
+  id Int @id @default(autoincrement())
+
+  appealId Int
+  appeal Appeal @relation(fields: [appealId], references: [id], onDelete: Cascade)
+
+  documentType AppealDocumentType
+
+  fileName String
+  filePath String
+  fileSize Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([appealId, documentType])
+}
+
+enum AppealDocumentType {
+  APPEAL
 }
 
 model AppealChecklist  {

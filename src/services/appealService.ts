@@ -1,11 +1,11 @@
-import { AppealStatus } from '@prisma/client';
+import { AppealDocumentType, AppealStatus } from '@prisma/client';
 import { prismaClient } from '../server.js';
-import * as z from 'zod';
-import { createAppealSchema } from '../validators/appealSchemas.js';
+
+import { type CreateAppealInput } from '../validators/appealSchemas.js';
 import { NotFoundError } from '../errors/customErrors.js';
 import { validateTransition } from '../utils/workflow.js';
 
-type CreateAppealInput = z.infer<typeof createAppealSchema>;
+type UploadedFile = Express.Multer.File;
 
 export const getAllAppealsService = async (userId: number) => {
     const appeals = await prismaClient.appeal.findMany({
@@ -19,16 +19,29 @@ export const getAllAppealsService = async (userId: number) => {
 export const createAppealService = async (
     userId: number,
     formData: CreateAppealInput,
+    file: UploadedFile,
 ) => {
-    const appeal = await prismaClient.appeal.create({
-        data: {
-            ...formData,
-            status: AppealStatus.UNDER_VERIFICATION,
-            appellantId: userId,
-        },
-    });
+    return prismaClient.$transaction(async (tx) => {
+        const appeal = await tx.appeal.create({
+            data: {
+                ...formData,
+                status: AppealStatus.UNDER_VERIFICATION,
+                appellantId: userId,
+            },
+        });
 
-    return appeal;
+        await tx.appealDocument.create({
+            data: {
+                appealId: appeal.id,
+                fileName: file.originalname,
+                filePath: file.path,
+                fileSize: file.size,
+                documentType: AppealDocumentType.APPEAL,
+            },
+        });
+
+        return appeal;
+    });
 };
 
 export const getAppealService = async (userId: number, appealId: number) => {

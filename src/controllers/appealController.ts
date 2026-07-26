@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import {
     createAppealService,
@@ -6,6 +6,7 @@ import {
     getAppealService,
     resubmitAppealService,
 } from '../services/appealService.js';
+import { BadRequestError } from '../errors/customErrors.js';
 
 export const getAllAppeals = async (req: Request, res: Response) => {
     const appeals = await getAllAppealsService(req.user!.userId);
@@ -15,7 +16,10 @@ export const getAllAppeals = async (req: Request, res: Response) => {
 
 export const createAppeal = async (req: Request, res: Response) => {
     const userId = req.user!.userId;
-    const appeal = await createAppealService(userId, req.body);
+    if (!req.file) {
+        throw new BadRequestError('Appeal document is required.');
+    }
+    const appeal = await createAppealService(userId, req.body, req.file);
 
     return res.status(StatusCodes.CREATED).json(appeal);
 };

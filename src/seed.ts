@@ -104,7 +104,68 @@ async function main() {
         where: { id: 1 },
         update: {},
         create: {
-            description: 'This is the first appeal',
+            appellantName: 'Padum Deuri',
+            appellantResidentialAddressLine1:
+                'B/35, Gool Mahal, Sleater Road, Grant Road',
+            appellantResidentialAddressLine2: 'Mumbai, Maharashtra, 400007',
+            appellantResidentialLandmark: 'Juhu Beach',
+            appellantResidentialCity: 'Mumbai',
+            appellantResidentialDistrict: 'Mumbai',
+            appellantResidentialState: 'Maharashtra',
+            appellantResidentialCountry: 'India',
+            appellantResidentialPinCode: '400007',
+
+            appellantServiceAddressLine1:
+                'B/35, Gool Mahal, Sleater Road, Grant Road',
+            appellantServiceAddressLine2: 'Mumbai, Maharashtra, 400007',
+            appellantServiceLandmark: 'Juhu Beach',
+            appellantServiceCity: 'Mumbai',
+            appellantServiceDistrict: 'Mumbai',
+            appellantServiceState: 'Maharashtra',
+            appellantServiceCountry: 'India',
+            appellantServicePinCode: '400007',
+
+            appellantMobileNumber: '+919864263985',
+            appellantEmailAddress: 'pdeuri@gmail.com',
+
+            respondentName: 'RERA Assam',
+            respondentOfficeAddressLine1:
+                'B/35, Gool Mahal, Sleater Road, Grant Road',
+            respondentOfficeAddressLine2: 'Mumbai, Maharashtra, 400007',
+            respondentOfficeLandmark: 'Juhu Beach',
+            respondentOfficeCity: 'Mumbai',
+            respondentOfficeDistrict: 'Mumbai',
+            respondentOfficeState: 'Maharashtra',
+            respondentOfficeCountry: 'India',
+            respondentOfficePinCode: '400007',
+
+            respondentServiceAddressLine1:
+                'B/35, Gool Mahal, Sleater Road, Grant Road',
+            respondentServiceAddressLine2: 'Mumbai, Maharashtra, 400007',
+            respondentServiceLandmark: 'Juhu Beach',
+            respondentServiceCity: 'Mumbai',
+            respondentServiceDistrict: 'Mumbai',
+            respondentServiceState: 'Maharashtra',
+            respondentServiceCountry: 'India',
+            respondentServicePinCode: '400007',
+
+            respondentMobileNumber: '+919876543210',
+            respondentEmailAddress: 'reraassam@gmail.com',
+
+            projectRegistrationNumber: 'RERA/253/2026',
+            isFiledWithinLimitation: true,
+            delayReason:
+                'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
+            factsOfCase:
+                'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
+            groundsOfAppeal:
+                'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
+            reliefSought:
+                'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
+            interimReliefRequested:
+                'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
+            isMatterPendingInCourt: false,
+
             status: 'UNDER_VERIFICATION',
             appellantId: appellant.id,
         },
