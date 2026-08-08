@@ -25,7 +25,7 @@ export const createAppealService = async (
         const appeal = await tx.appeal.create({
             data: {
                 ...formData,
-                status: AppealStatus.UNDER_VERIFICATION,
+                status: AppealStatus.DRAFT,
                 appellantId: userId,
             },
         });

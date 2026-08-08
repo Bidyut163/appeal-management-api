@@ -204,14 +204,27 @@ model Hearing{
 }
 
 model Payment {
-  id        Int           @id @default(autoincrement())
-  orderId   String
-  amount    Int
-  status    PaymentStatus @default(PENDING)
-  createdAt DateTime      @default(now())
+  id        Int    @id @default(autoincrement())
 
-  appealId Int    @unique
-  appeal   Appeal @relation(fields: [appealId], references: [id])
+  appealId  Int    @unique
+  appeal    Appeal @relation(fields: [appealId], references: [id], onDelete: Cascade)
+
+  amount    Int
+
+  status        PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod?
+  
+  razorpayOrderId String? @unique
+  razorpayPaymentId String? @unique
+  razorpaySignature String?
+
+  failureCode   String?
+  failureReason String?
+  
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status])
 }
 
 enum AppealStatus {
@@ -228,6 +241,13 @@ enum PaymentStatus {
   PENDING
   SUCCESS
   FAILED
+}
+
+enum PaymentMethod {
+  UPI
+  CARD
+  NET_BANKING
+  WALLET
 }
 
 enum HearingStatus {
