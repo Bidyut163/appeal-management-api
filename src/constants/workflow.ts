@@ -12,9 +12,12 @@ export const ALLOWED_TRANSITIONS: Record<AppealStatus, AppealStatus[]> = {
 
     [AppealStatus.REVERTED_TO_APPELLANT]: [AppealStatus.UNDER_VERIFICATION],
 
-    [AppealStatus.UNDER_HEARING]: [AppealStatus.CLOSED, AppealStatus.REJECTED],
+    [AppealStatus.UNDER_HEARING]: [
+        AppealStatus.DISPOSED,
+        AppealStatus.REJECTED,
+    ],
 
-    [AppealStatus.CLOSED]: [],
+    [AppealStatus.DISPOSED]: [],
 
     [AppealStatus.REJECTED]: [],
 };
