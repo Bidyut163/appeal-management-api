@@ -2,7 +2,7 @@ import { AppealDocumentType, AppealStatus } from '@prisma/client';
 import { prismaClient } from '../server.js';
 
 import { type CreateAppealInput } from '../validators/appealSchemas.js';
-import { NotFoundError } from '../errors/customErrors.js';
+import { BadRequestError, NotFoundError } from '../errors/customErrors.js';
 import { validateTransition } from '../utils/workflow.js';
 
 type UploadedFile = Express.Multer.File;
@@ -65,8 +65,8 @@ export const resubmitAppealService = async (
 
     if (!appeal) throw new NotFoundError('Appeal not found');
 
-    // if (appeal.status !== AppealStatus.REVERTED_TO_APPELLANT)
-    //     throw new BadRequestError('Appeal cannot be resubmitted');
+    if (appeal.status !== AppealStatus.REVERTED_TO_APPELLANT)
+        throw new BadRequestError('Appeal cannot be resubmitted');
 
     validateTransition(appeal.status, AppealStatus.UNDER_VERIFICATION);
 
