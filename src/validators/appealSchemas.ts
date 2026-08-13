@@ -204,10 +204,8 @@ export const verifyAppealSchema = z
 
 export const revertAppealSchema = z
     .object({
-        registrarComment: z
-            .string()
-            .trim()
-            .min(1, 'Registrar comment is required'),
+        revertReason: z.string().trim().min(1, 'Revert reason is required'),
+        fields: z.array(z.string()).min(1, 'Revert fields Required'),
     })
     .strict();
 

@@ -40,10 +40,16 @@ export const getWithRegistrarAppealService = async (appealId: number) => {
     return appeal;
 };
 
+type RevertAppealInput = {
+    revertReason: string;
+    fields: string[];
+};
 export const revertAppealService = async (
     appealId: number,
-    comment: string,
+    userId: number,
+    data: RevertAppealInput,
 ) => {
+    const { revertReason, fields } = data;
     const appeal = await prismaClient.appeal.findUnique({
         where: { id: appealId },
     });
@@ -54,15 +60,35 @@ export const revertAppealService = async (
 
     validateTransition(appeal.status, AppealStatus.REVERTED_TO_APPELLANT);
 
-    const updatedAppeal = await prismaClient.appeal.update({
-        where: { id: appealId },
-        data: {
-            registrarComments: comment,
-            status: AppealStatus.REVERTED_TO_APPELLANT,
-        },
+    // const updatedAppeal = await prismaClient.appeal.update({
+    //     where: { id: appealId },
+    //     data: {
+    //         registrarComments: comment,
+    //         status: AppealStatus.REVERTED_TO_APPELLANT,
+    //     },
+    // });
+
+    return prismaClient.$transaction(async (tx) => {
+        const appealRevert = await tx.appealRevert.create({
+            data: {
+                appealId,
+                createdById: userId,
+                reason: revertReason,
+                fields,
+            },
+        });
+
+        await tx.appeal.update({
+            where: { id: appealId },
+            data: {
+                status: AppealStatus.REVERTED_TO_APPELLANT,
+            },
+        });
+
+        return appealRevert;
     });
 
-    return updatedAppeal;
+    // return updatedAppeal;
 };
 
 export const createAppealChecklistService = async (

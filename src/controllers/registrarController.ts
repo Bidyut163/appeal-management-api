@@ -23,9 +23,14 @@ export const getWithRegistrarAppeal = async (req: Request, res: Response) => {
 
 export const revertAppeal = async (req: Request, res: Response) => {
     const appealId = Number(req.params.id);
-    const { registrarComment } = req.body;
+    const userId = req.user!.userId;
+    // const { registrarComment } = req.body;
+    const { revertReason, fields } = req.body;
 
-    const appeal = await revertAppealService(appealId, registrarComment);
+    const appeal = await revertAppealService(appealId, userId, {
+        revertReason,
+        fields,
+    });
 
     return res.status(StatusCodes.OK).json(appeal);
 };
