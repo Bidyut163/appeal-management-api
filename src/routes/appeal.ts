@@ -4,6 +4,7 @@ import {
     createAppeal,
     getAllAppeals,
     getAppeal,
+    getAppealRevert,
     resubmitAppeal,
 } from '../controllers/appealController.js';
 import { authorizeRoles } from '../middlewares/authorizeMiddleware.js';
@@ -53,6 +54,18 @@ router.get(
     authenticateUser,
     authorizeRoles(RoleType.APPELLANT),
     asyncHandler(getAppeal),
+);
+
+// @route GET api/v1/appeals/:id/revert
+// @desc GET the details of an reverted appeal
+// @access Private/Only appellant
+
+router.get(
+    '/:id/revert',
+    validate(appealIdParamSchema, 'params'),
+    authenticateUser,
+    authorizeRoles(RoleType.APPELLANT),
+    asyncHandler(getAppealRevert),
 );
 
 // @route PATCH api/v1/appeals/:id/resubmit

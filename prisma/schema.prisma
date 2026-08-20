@@ -186,7 +186,7 @@ model AppealRevert {
 
   reason    String
   // Which parts of the appeal need correction
-  fields    Json
+  fields    String[]
 
   status    RevertStatus @default(OPEN)
 

@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import {
     createAppealService,
     getAllAppealsService,
+    getAppealRevertService,
     getAppealService,
     resubmitAppealService,
 } from '../services/appealService.js';
@@ -29,6 +30,15 @@ export const getAppeal = async (req: Request, res: Response) => {
     const appealId = Number(req.params.id);
 
     const appeal = await getAppealService(userId, appealId);
+
+    return res.status(StatusCodes.OK).json(appeal);
+};
+
+export const getAppealRevert = async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
+    const appealId = Number(req.params.id);
+
+    const appeal = await getAppealRevertService(userId, appealId);
 
     return res.status(StatusCodes.OK).json(appeal);
 };
