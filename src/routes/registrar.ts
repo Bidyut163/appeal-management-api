@@ -7,18 +7,24 @@ import { authorizeRoles } from '../middlewares/authorizeMiddleware.js';
 
 // controllers
 import {
+    completeHearing,
     createAppealChecklist,
+    getAppealsUnderHearing,
+    getAppealUnderHearing,
     getWithRegistrarAppeal,
     getWithRegistrarAppeals,
     revertAppeal,
+    scheduleNextHearing,
     sendAppealToHearing,
 } from '../controllers/registrarController.js';
 
 // validators
 import {
     appealIdParamSchema,
+    completeHearingParamSchema,
     createAppealChecklistSchema,
     revertAppealSchema,
+    scheduleNextHearingSchema,
     sendToHearingSchema,
 } from '../validators/appealSchemas.js';
 
@@ -31,6 +37,29 @@ const router: Router = Router();
 // ================================
 // @@path: api/v1/registrar/appeals
 // ================================
+
+// @route GET api/v1/registrar/appeals/under-hearing
+// @desc  Get all appeals under hearing
+// @access Private/Only registrar
+
+router.get(
+    '/under-hearing',
+    authenticateUser,
+    authorizeRoles(RoleType.REGISTRAR),
+    asyncHandler(getAppealsUnderHearing),
+);
+
+// @route GET api/v1/registrar/appeals/under-hearing/:id
+// @desc  Get appeal under hearing
+// @access Private/Only registrar
+
+router.get(
+    '/under-hearing/:id',
+    authenticateUser,
+    authorizeRoles(RoleType.REGISTRAR),
+    validate(appealIdParamSchema, 'params'),
+    asyncHandler(getAppealUnderHearing),
+);
 
 // @route GET api/v1/registrar/appeals
 // @desc Get all appeals with status = 'WITH_REGISTRAR'
@@ -92,6 +121,31 @@ router.patch(
     authenticateUser,
     authorizeRoles(RoleType.REGISTRAR),
     asyncHandler(sendAppealToHearing),
+);
+
+// @route PATCH api/v1/registrar/appeals/:appealId/hearings/:hearingId/complete
+// @desc  Mark hearing as complete
+// @access Private/Only registrar
+
+router.patch(
+    '/:appealId/hearings/:hearingId/complete',
+    authenticateUser,
+    authorizeRoles(RoleType.REGISTRAR),
+    validate(completeHearingParamSchema, 'params'),
+    asyncHandler(completeHearing),
+);
+
+// @route POST api/v1/registrar/appeals/:id/schedule-next-hearing
+// @desc  Schedule next hearing
+// @access Private/Only registrar
+
+router.post(
+    '/:id/schedule-next-hearing',
+    authenticateUser,
+    authorizeRoles(RoleType.REGISTRAR),
+    validate(appealIdParamSchema, 'params'),
+    validate(scheduleNextHearingSchema),
+    asyncHandler(scheduleNextHearing),
 );
 
 export default router;

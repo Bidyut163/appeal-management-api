@@ -1,4 +1,4 @@
-import { AppealStatus } from '@prisma/client';
+import { AppealStatus, HearingStatus } from '@prisma/client';
 import { BadRequestError, NotFoundError } from '../errors/customErrors.js';
 import { prismaClient } from '../server.js';
 import { validateTransition } from '../utils/workflow.js';
@@ -177,4 +177,124 @@ export const sendAppealToHearingService = async (
     });
 
     return result;
+};
+
+export const completeHearingService = async (
+    appealId: number,
+    hearingId: number,
+) => {
+    const appeal = await prismaClient.appeal.findFirst({
+        where: { id: appealId, status: AppealStatus.UNDER_HEARING },
+    });
+
+    if (!appeal) {
+        throw new NotFoundError('Appeal not found!');
+    }
+
+    const hearing = await prismaClient.hearing.findFirst({
+        where: {
+            id: hearingId,
+            appealId,
+            status: HearingStatus.SCHEDULED,
+        },
+    });
+
+    if (!hearing) {
+        throw new NotFoundError('Scheduled hearing not found!');
+    }
+
+    const updatedHearing = await prismaClient.hearing.update({
+        where: { id: hearingId },
+        data: {
+            status: HearingStatus.COMPLETED,
+        },
+    });
+
+    return updatedHearing;
+};
+
+export const scheduleNextHearingService = async (
+    appealId: number,
+    hearingDate: Date,
+) => {
+    const appeal = await prismaClient.appeal.findFirst({
+        where: {
+            id: appealId,
+            status: AppealStatus.UNDER_HEARING,
+        },
+    });
+
+    if (!appeal) {
+        throw new NotFoundError('Appeal not found or not under hearing!');
+    }
+
+    const lastHearing = await prismaClient.hearing.findFirst({
+        where: {
+            appealId,
+        },
+        orderBy: {
+            hearingNumber: 'desc',
+        },
+    });
+
+    if (lastHearing?.status !== HearingStatus.COMPLETED) {
+        throw new BadRequestError(
+            'Current hearing must be completed before scheduling the next hearing',
+        );
+    }
+
+    const nextHearingNumber = (lastHearing?.hearingNumber ?? 0) + 1;
+
+    const hearing = await prismaClient.hearing.create({
+        data: {
+            appealId,
+            hearingNumber: nextHearingNumber,
+            hearingDate,
+        },
+    });
+
+    return hearing;
+};
+
+export const getAppealsUnderHearingService = async () => {
+    const appeals = await prismaClient.appeal.findMany({
+        where: {
+            status: AppealStatus.UNDER_HEARING,
+        },
+        include: {
+            hearings: {
+                orderBy: {
+                    hearingNumber: 'desc',
+                },
+                take: 1,
+            },
+        },
+        orderBy: {
+            updatedAt: 'desc',
+        },
+    });
+
+    return appeals;
+};
+
+export const getAppealUnderHearingService = async (appealId: number) => {
+    const appeal = await prismaClient.appeal.findFirst({
+        where: {
+            id: appealId,
+            status: AppealStatus.UNDER_HEARING,
+        },
+        include: {
+            hearings: {
+                orderBy: {
+                    hearingNumber: 'asc',
+                },
+            },
+        },
+    });
+
+    if (!appeal) {
+        throw new NotFoundError('Appeal not found or not under hearing!');
+    }
+
+    return appeal;
 };

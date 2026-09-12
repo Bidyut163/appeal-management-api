@@ -225,3 +225,27 @@ export const sendToHearingSchema = z
             .min(1, 'Registrar comment required'),
     })
     .strict();
+
+export const completeHearingParamSchema = z
+    .object({
+        appealId: z.coerce
+            .number({
+                error: 'Appeal id must be a number',
+            })
+            .int('Appeal id must be an integer')
+            .positive('Appeal id must be positive'),
+
+        hearingId: z.coerce
+            .number({
+                error: 'Hearing id must be a number',
+            })
+            .int('Hearing id must be an integer')
+            .positive('Hearing id must be positive'),
+    })
+    .strict();
+
+export const scheduleNextHearingSchema = z
+    .object({
+        hearingDate: z.coerce.date(),
+    })
+    .strict();
