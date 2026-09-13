@@ -1,4 +1,4 @@
-import { AppealStatus, HearingStatus } from '@prisma/client';
+import { AppealStatus, AuditAction, HearingStatus } from '@prisma/client';
 import { BadRequestError, NotFoundError } from '../errors/customErrors.js';
 import { prismaClient } from '../server.js';
 import { validateTransition } from '../utils/workflow.js';
@@ -8,6 +8,7 @@ import type {
     createAppealChecklistSchema,
     sendToHearingSchema,
 } from '../validators/appealSchemas.js';
+import { createAuditLogService } from './auditLogService.js';
 
 type CreateAppealChecklistInput = z.infer<typeof createAppealChecklistSchema>;
 type SendToHearingInput = z.infer<typeof sendToHearingSchema>;
@@ -125,6 +126,7 @@ export const createAppealChecklistService = async (
 export const sendAppealToHearingService = async (
     appealId: number,
     formData: SendToHearingInput,
+    userId: number,
 ) => {
     const appeal = await prismaClient.appeal.findFirst({
         where: { id: appealId, status: AppealStatus.WITH_REGISTRAR },
@@ -142,14 +144,6 @@ export const sendAppealToHearingService = async (
     }
 
     validateTransition(appeal.status, AppealStatus.UNDER_HEARING);
-
-    // const updatedAppeal = await prismaClient.appeal.update({
-    //     where: { id: appealId },
-    //     data: {
-    //         ...formData,
-    //         status: AppealStatus.UNDER_HEARING,
-    //     },
-    // });
 
     const { hearingDate, registrarComments } = formData;
 
@@ -170,6 +164,17 @@ export const sendAppealToHearingService = async (
             },
         });
 
+        await createAuditLogService(tx, {
+            appealId,
+            userId,
+            action: AuditAction.HEARING_SCHEDULED,
+            details: {
+                hearingId: hearing.id,
+                hearingNumber: hearing.hearingNumber,
+                hearingDate: hearing.hearingDate.toISOString(),
+            },
+        });
+
         return {
             updatedAppeal,
             hearing,
@@ -182,6 +187,7 @@ export const sendAppealToHearingService = async (
 export const completeHearingService = async (
     appealId: number,
     hearingId: number,
+    userId: number,
 ) => {
     const appeal = await prismaClient.appeal.findFirst({
         where: { id: appealId, status: AppealStatus.UNDER_HEARING },
@@ -203,19 +209,34 @@ export const completeHearingService = async (
         throw new NotFoundError('Scheduled hearing not found!');
     }
 
-    const updatedHearing = await prismaClient.hearing.update({
-        where: { id: hearingId },
-        data: {
-            status: HearingStatus.COMPLETED,
-        },
+    const result = await prismaClient.$transaction(async (tx) => {
+        const updatedHearing = await tx.hearing.update({
+            where: { id: hearingId },
+            data: {
+                status: HearingStatus.COMPLETED,
+            },
+        });
+
+        await createAuditLogService(tx, {
+            appealId,
+            userId,
+            action: AuditAction.HEARING_COMPLETED,
+            details: {
+                hearingId: updatedHearing.id,
+                hearingNumber: updatedHearing.hearingNumber,
+            },
+        });
+
+        return updatedHearing;
     });
 
-    return updatedHearing;
+    return result;
 };
 
 export const scheduleNextHearingService = async (
     appealId: number,
     hearingDate: Date,
+    userId: number,
 ) => {
     const appeal = await prismaClient.appeal.findFirst({
         where: {
@@ -245,15 +266,28 @@ export const scheduleNextHearingService = async (
 
     const nextHearingNumber = (lastHearing?.hearingNumber ?? 0) + 1;
 
-    const hearing = await prismaClient.hearing.create({
-        data: {
-            appealId,
-            hearingNumber: nextHearingNumber,
-            hearingDate,
-        },
-    });
+    return await prismaClient.$transaction(async (tx) => {
+        const hearing = await tx.hearing.create({
+            data: {
+                appealId,
+                hearingNumber: nextHearingNumber,
+                hearingDate,
+            },
+        });
 
-    return hearing;
+        await createAuditLogService(tx, {
+            appealId,
+            userId,
+            action: AuditAction.HEARING_SCHEDULED,
+            details: {
+                hearingId: hearing.id,
+                hearingNumber: hearing.hearingNumber,
+                hearingDate: hearing.hearingDate.toISOString(),
+            },
+        });
+
+        return hearing;
+    });
 };
 
 export const getAppealsUnderHearingService = async () => {

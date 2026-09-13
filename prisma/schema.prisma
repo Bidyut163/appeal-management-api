@@ -24,6 +24,8 @@ model User {
   appeals Appeal[] @relation("Appellant")
    
   createdReverts   AppealRevert[]
+
+  auditLogs AuditLog[]
 }
 
 model Role {
@@ -153,6 +155,8 @@ model Appeal {
 
   appealDocuments  AppealDocument[] 
   appealReverts    AppealRevert[]
+
+  auditLogs AuditLog[]
 }
 
 model AppealDocument {
@@ -258,6 +262,40 @@ model Payment {
 
   @@index([status])
 }
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+
+  appealId  Int?
+  appeal Appeal? @relation(fields: [appealId], references: [id], onDelete: Cascade)
+
+  userId    Int?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  action    AuditAction
+  details   Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([appealId, createdAt])
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}
+
+enum AuditAction {
+  APPEAL_CREATED
+  APPEAL_SUBMITTED
+  APPEAL_VERIFIED
+  APPEAL_REVERTED
+  APPEAL_RESUBMITTED
+
+  HEARING_SCHEDULED
+  HEARING_COMPLETED
+
+  APPEAL_DISPOSED
+  APPEAL_REJECTED
+}
+
 
 enum AppealStatus {
   DRAFT

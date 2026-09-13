@@ -50,7 +50,11 @@ export const createAppealChecklist = async (req: Request, res: Response) => {
 export const sendAppealToHearing = async (req: Request, res: Response) => {
     const appealId = Number(req.params.id);
 
-    const appeal = await sendAppealToHearingService(appealId, req.body);
+    const appeal = await sendAppealToHearingService(
+        appealId,
+        req.body,
+        req.user!.userId,
+    );
 
     return res.status(StatusCodes.OK).json(appeal);
 };
@@ -59,7 +63,11 @@ export const completeHearing = async (req: Request, res: Response) => {
     const appealId = Number(req.params.appealId);
     const hearingId = Number(req.params.hearingId);
 
-    const hearing = await completeHearingService(appealId, hearingId);
+    const hearing = await completeHearingService(
+        appealId,
+        hearingId,
+        req.user!.userId,
+    );
 
     return res.status(StatusCodes.OK).json(hearing);
 };
@@ -68,7 +76,11 @@ export const scheduleNextHearing = async (req: Request, res: Response) => {
     const appealId = Number(req.params.id);
     const { hearingDate } = req.body;
 
-    const hearing = await scheduleNextHearingService(appealId, hearingDate);
+    const hearing = await scheduleNextHearingService(
+        appealId,
+        hearingDate,
+        req.user!.userId,
+    );
 
     return res.status(StatusCodes.OK).json(hearing);
 };
