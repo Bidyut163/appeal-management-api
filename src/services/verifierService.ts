@@ -1,11 +1,13 @@
-import { AppealStatus } from '@prisma/client';
+import { AppealStatus, AuditAction } from '@prisma/client';
 import { prismaClient } from '../server.js';
 import { NotFoundError } from '../errors/customErrors.js';
 import { validateTransition } from '../utils/workflow.js';
+import { createAuditLogService } from './auditLogService.js';
 
 export const verifyAppealService = async (
     appealId: number,
     comment: string,
+    userId: number,
 ) => {
     const appeal = await prismaClient.appeal.findUnique({
         where: { id: appealId },
@@ -17,15 +19,26 @@ export const verifyAppealService = async (
 
     validateTransition(appeal.status, AppealStatus.WITH_REGISTRAR);
 
-    const updatedAppeal = await prismaClient.appeal.update({
-        where: { id: appealId },
-        data: {
-            verifierComments: comment,
-            status: AppealStatus.WITH_REGISTRAR,
-        },
-    });
+    return prismaClient.$transaction(async (tx) => {
+        const updatedAppeal = await tx.appeal.update({
+            where: { id: appealId },
+            data: {
+                verifierComments: comment,
+                status: AppealStatus.WITH_REGISTRAR,
+            },
+        });
 
-    return updatedAppeal;
+        await createAuditLogService(tx, {
+            appealId,
+            userId,
+            action: AuditAction.APPEAL_VERIFIED,
+            details: {
+                status: AppealStatus.WITH_REGISTRAR,
+            },
+        });
+
+        return updatedAppeal;
+    });
 };
 
 export const getUnderVerificationAppealsService = async () => {

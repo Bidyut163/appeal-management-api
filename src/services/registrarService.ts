@@ -61,14 +61,6 @@ export const revertAppealService = async (
 
     validateTransition(appeal.status, AppealStatus.REVERTED_TO_APPELLANT);
 
-    // const updatedAppeal = await prismaClient.appeal.update({
-    //     where: { id: appealId },
-    //     data: {
-    //         registrarComments: comment,
-    //         status: AppealStatus.REVERTED_TO_APPELLANT,
-    //     },
-    // });
-
     return prismaClient.$transaction(async (tx) => {
         const appealRevert = await tx.appealRevert.create({
             data: {
@@ -82,6 +74,17 @@ export const revertAppealService = async (
         await tx.appeal.update({
             where: { id: appealId },
             data: {
+                status: AppealStatus.REVERTED_TO_APPELLANT,
+            },
+        });
+
+        await createAuditLogService(tx, {
+            appealId,
+            userId,
+            action: AuditAction.APPEAL_REVERTED,
+            details: {
+                reason: revertReason,
+                fields,
                 status: AppealStatus.REVERTED_TO_APPELLANT,
             },
         });

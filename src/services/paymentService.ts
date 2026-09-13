@@ -1,4 +1,4 @@
-import { AppealStatus, PaymentStatus } from '@prisma/client';
+import { AppealStatus, AuditAction, PaymentStatus } from '@prisma/client';
 import { prismaClient } from '../server.js';
 import { BadRequestError, NotFoundError } from '../errors/customErrors.js';
 import { razorpay } from '../lib/razorpay.js';
@@ -6,6 +6,7 @@ import { APPEAL_FILING_FEE } from '../constants/payment.js';
 
 import { validateTransition } from '../utils/workflow.js';
 import { verifyRazorpaySignature } from '../utils/payment.js';
+import { createAuditLogService } from './auditLogService.js';
 
 export const createOrderService = async (userId: number, appealId: number) => {
     const appeal = await prismaClient.appeal.findFirst({
@@ -149,6 +150,16 @@ export const verifyPaymentService = async (
         await tx.appeal.update({
             where: { id: appealId },
             data: {
+                status: AppealStatus.UNDER_VERIFICATION,
+            },
+        });
+
+        await createAuditLogService(tx, {
+            appealId,
+            userId,
+            action: AuditAction.APPEAL_SUBMITTED,
+            details: {
+                paymentStatus: PaymentStatus.SUCCESS,
                 status: AppealStatus.UNDER_VERIFICATION,
             },
         });

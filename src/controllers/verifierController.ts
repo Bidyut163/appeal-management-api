@@ -12,7 +12,11 @@ export const verifyAppeal = async (req: Request, res: Response) => {
     const appealId = Number(req.params.id);
     const { verifierComment } = req.body;
 
-    const appeal = await verifyAppealService(appealId, verifierComment);
+    const appeal = await verifyAppealService(
+        appealId,
+        verifierComment,
+        req.user!.userId,
+    );
 
     return res.status(StatusCodes.OK).json(appeal);
 };

@@ -1,4 +1,9 @@
-import { AppealDocumentType, AppealStatus, RevertStatus } from '@prisma/client';
+import {
+    AppealDocumentType,
+    AppealStatus,
+    AuditAction,
+    RevertStatus,
+} from '@prisma/client';
 import { prismaClient } from '../server.js';
 
 import { type CreateAppealInput } from '../validators/appealSchemas.js';
@@ -8,6 +13,7 @@ import {
     REVERTABLE_FIELDS,
     type RevertableField,
 } from '../constants/appeal.js';
+import { createAuditLogService } from './auditLogService.js';
 
 type UploadedFile = Express.Multer.File;
 
@@ -41,6 +47,15 @@ export const createAppealService = async (
                 filePath: file.path,
                 fileSize: file.size,
                 documentType: AppealDocumentType.APPEAL,
+            },
+        });
+
+        await createAuditLogService(tx, {
+            appealId: appeal.id,
+            userId,
+            action: AuditAction.APPEAL_CREATED,
+            details: {
+                status: AppealStatus.DRAFT,
             },
         });
 
@@ -160,6 +175,16 @@ export const resubmitAppealService = async (
             where: { id: revertAppeal.id },
             data: {
                 status: RevertStatus.RESUBMITTED,
+            },
+        });
+
+        await createAuditLogService(tx, {
+            appealId,
+            userId,
+            action: AuditAction.APPEAL_RESUBMITTED,
+            details: {
+                fields: revertAppeal.fields,
+                status: AppealStatus.UNDER_VERIFICATION,
             },
         });
 
