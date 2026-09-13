@@ -35,6 +35,7 @@ import {
 // types
 import { RoleType } from '@prisma/client';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { getAuditLogs } from '../controllers/auditLogController.js';
 
 const router: Router = Router();
 
@@ -176,6 +177,18 @@ router.patch(
     validate(appealIdParamSchema, 'params'),
     validate(rejectAppealSchema),
     asyncHandler(rejectAppeal),
+);
+
+// @route GET /api/v1/registrar/appeals/:id/audit-logs
+// @desc  Get audit logs
+// @access Private/Only registrar
+
+router.get(
+    '/:id/audit-logs',
+    authenticateUser,
+    authorizeRoles(RoleType.REGISTRAR),
+    validate(appealIdParamSchema, 'params'),
+    asyncHandler(getAuditLogs),
 );
 
 export default router;
