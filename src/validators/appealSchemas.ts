@@ -249,3 +249,15 @@ export const scheduleNextHearingSchema = z
         hearingDate: z.coerce.date(),
     })
     .strict();
+
+export const disposeAppealSchema = z
+    .object({
+        comment: z.string().trim().min(1, 'Decision comment is required'),
+    })
+    .strict();
+
+export const rejectAppealSchema = z
+    .object({
+        rejectReason: z.string().trim().min(1, 'Rejection reason is required'),
+    })
+    .strict();

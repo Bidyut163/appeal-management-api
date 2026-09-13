@@ -142,6 +142,8 @@ model Appeal {
   verifierComments  String?
   registrarComments String?
 
+  finalDecisionComment String?
+
   appellantId Int
   appellant   User @relation("Appellant", fields: [appellantId], references: [id])
 

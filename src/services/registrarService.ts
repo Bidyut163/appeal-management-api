@@ -335,3 +335,90 @@ export const getAppealUnderHearingService = async (appealId: number) => {
 
     return appeal;
 };
+
+export const disposeAppealService = async (
+    appealId: number,
+    comment: string,
+    userId: number,
+) => {
+    const appeal = await prismaClient.appeal.findFirst({
+        where: { id: appealId, status: AppealStatus.UNDER_HEARING },
+    });
+
+    if (!appeal) {
+        throw new NotFoundError('Appeal not found or not under hearing!');
+    }
+
+    const lastHearing = await prismaClient.hearing.findFirst({
+        where: { appealId },
+        orderBy: { hearingNumber: 'desc' },
+    });
+
+    if (lastHearing?.status !== HearingStatus.COMPLETED) {
+        throw new BadRequestError(
+            'Current hearing must be completed before disposing the appeal',
+        );
+    }
+
+    validateTransition(appeal.status, AppealStatus.DISPOSED);
+
+    return await prismaClient.$transaction(async (tx) => {
+        const updatedAppeal = await tx.appeal.update({
+            where: { id: appealId },
+            data: {
+                status: AppealStatus.DISPOSED,
+                finalDecisionComment: comment,
+            },
+        });
+
+        await createAuditLogService(tx, {
+            appealId,
+            userId,
+            action: AuditAction.APPEAL_DISPOSED,
+            details: {
+                comment,
+                status: AppealStatus.DISPOSED,
+            },
+        });
+
+        return updatedAppeal;
+    });
+};
+
+export const rejectAppealService = async (
+    appealId: number,
+    reason: string,
+    userId: number,
+) => {
+    const appeal = await prismaClient.appeal.findFirst({
+        where: { id: appealId },
+    });
+
+    if (!appeal) {
+        throw new NotFoundError('Appeal not found!');
+    }
+
+    validateTransition(appeal.status, AppealStatus.REJECTED);
+
+    return await prismaClient.$transaction(async (tx) => {
+        const updatedAppeal = await tx.appeal.update({
+            where: { id: appealId },
+            data: {
+                status: AppealStatus.REJECTED,
+                finalDecisionComment: reason,
+            },
+        });
+
+        await createAuditLogService(tx, {
+            appealId,
+            userId,
+            action: AuditAction.APPEAL_REJECTED,
+            details: {
+                reason,
+                status: AppealStatus.REJECTED,
+            },
+        });
+
+        return updatedAppeal;
+    });
+};

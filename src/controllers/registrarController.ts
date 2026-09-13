@@ -3,10 +3,12 @@ import { StatusCodes } from 'http-status-codes';
 import {
     completeHearingService,
     createAppealChecklistService,
+    disposeAppealService,
     getAppealsUnderHearingService,
     getAppealUnderHearingService,
     getWithRegistrarAppealService,
     getWithRegistrarAppealsService,
+    rejectAppealService,
     revertAppealService,
     scheduleNextHearingService,
     sendAppealToHearingService,
@@ -95,6 +97,32 @@ export const getAppealUnderHearing = async (req: Request, res: Response) => {
     const appealId = Number(req.params.id);
 
     const appeal = await getAppealUnderHearingService(appealId);
+
+    return res.status(StatusCodes.OK).json(appeal);
+};
+
+export const disposeAppeal = async (req: Request, res: Response) => {
+    const appealId = Number(req.params.id);
+    const { comment } = req.body;
+
+    const appeal = await disposeAppealService(
+        appealId,
+        comment,
+        req.user!.userId,
+    );
+
+    return res.status(StatusCodes.OK).json(appeal);
+};
+
+export const rejectAppeal = async (req: Request, res: Response) => {
+    const appealId = Number(req.params.id);
+    const { rejectReason } = req.body;
+
+    const appeal = await rejectAppealService(
+        appealId,
+        rejectReason,
+        req.user!.userId,
+    );
 
     return res.status(StatusCodes.OK).json(appeal);
 };

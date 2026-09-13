@@ -9,10 +9,12 @@ import { authorizeRoles } from '../middlewares/authorizeMiddleware.js';
 import {
     completeHearing,
     createAppealChecklist,
+    disposeAppeal,
     getAppealsUnderHearing,
     getAppealUnderHearing,
     getWithRegistrarAppeal,
     getWithRegistrarAppeals,
+    rejectAppeal,
     revertAppeal,
     scheduleNextHearing,
     sendAppealToHearing,
@@ -23,6 +25,8 @@ import {
     appealIdParamSchema,
     completeHearingParamSchema,
     createAppealChecklistSchema,
+    disposeAppealSchema,
+    rejectAppealSchema,
     revertAppealSchema,
     scheduleNextHearingSchema,
     sendToHearingSchema,
@@ -146,6 +150,32 @@ router.post(
     validate(appealIdParamSchema, 'params'),
     validate(scheduleNextHearingSchema),
     asyncHandler(scheduleNextHearing),
+);
+
+// @route PATCH api/v1/registrar/appeals/:id/dispose
+// @desc  Dispose appeal
+// @access Private/Only registrar
+
+router.patch(
+    '/:id/dispose',
+    authenticateUser,
+    authorizeRoles(RoleType.REGISTRAR),
+    validate(appealIdParamSchema, 'params'),
+    validate(disposeAppealSchema),
+    asyncHandler(disposeAppeal),
+);
+
+// @route PATCH api/v1/registrar/appeals/:id/reject
+// @desc  Reject appeal
+// @access Private/Only registrar
+
+router.patch(
+    '/:id/reject',
+    authenticateUser,
+    authorizeRoles(RoleType.REGISTRAR),
+    validate(appealIdParamSchema, 'params'),
+    validate(rejectAppealSchema),
+    asyncHandler(rejectAppeal),
 );
 
 export default router;
