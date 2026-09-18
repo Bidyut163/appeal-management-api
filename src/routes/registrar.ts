@@ -8,7 +8,7 @@ import { authorizeRoles } from '../middlewares/authorizeMiddleware.js';
 // controllers
 import {
     completeHearing,
-    createAppealChecklist,
+    updateAppealScrutiny,
     disposeAppeal,
     getAppealsUnderHearing,
     getAppealUnderHearing,
@@ -24,12 +24,12 @@ import {
 import {
     appealIdParamSchema,
     completeHearingParamSchema,
-    createAppealChecklistSchema,
     disposeAppealSchema,
     rejectAppealSchema,
     revertAppealSchema,
     scheduleNextHearingSchema,
     sendToHearingSchema,
+    updateAppealScrutinySchema,
 } from '../validators/appealSchemas.js';
 
 // types
@@ -109,10 +109,10 @@ router.patch(
 router.post(
     '/:id/checklist',
     validate(appealIdParamSchema, 'params'),
-    validate(createAppealChecklistSchema),
+    validate(updateAppealScrutinySchema),
     authenticateUser,
     authorizeRoles(RoleType.REGISTRAR),
-    asyncHandler(createAppealChecklist),
+    asyncHandler(updateAppealScrutiny),
 );
 
 // @route PATCH api/v1/registrar/appeals/:id/send-to-hearing

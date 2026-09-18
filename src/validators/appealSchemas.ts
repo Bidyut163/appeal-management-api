@@ -211,10 +211,69 @@ export const revertAppealSchema = z
 
 export const createAppealChecklistSchema = z
     .object({
-        complaintNumber: z.string(),
-        sectionNumber: z.string(),
+        complaintNumber: z
+            .string()
+            .trim()
+            .min(1, 'Complaint number is required'),
+
+        legalProvision: z.string().trim().min(1, 'Legal provision is required'),
+
+        isAppealCompetent: z.boolean().optional(),
+
+        arePartiesAndAddressesProper: z.boolean().optional(),
+
+        isCertifiedCopyFiled: z.boolean().optional(),
+
+        orderDate: z.coerce.date().optional(),
+
+        communicationDate: z.coerce.date().optional(),
+
+        certifiedCopyApplicationDate: z.coerce.date().optional(),
+
+        certifiedCopyReadyDate: z.coerce.date().optional(),
+
+        certifiedCopyReceiptDate: z.coerce.date().optional(),
+
+        onlineFilingDate: z.coerce.date().optional(),
+
+        hardCopySubmissionDate: z.coerce.date().optional(),
+
+        isHardCopySubmissionDelayed: z.boolean().optional(),
+
+        hardCopyDelayDays: z.number().int().nonnegative().optional(),
+
+        isAppealWithinLimitation: z.boolean().optional(),
+
+        isAppealFilingDelayed: z.boolean().optional(),
+
+        appealFilingDelayDays: z.number().int().nonnegative().optional(),
+
+        isCondonationApplicationFiled: z.boolean().optional(),
+
+        areFeesPaid: z.boolean().optional(),
+
+        isPaymentReceiptFiled: z.boolean().optional(),
+
+        paymentDate: z.coerce.date().optional(),
+
+        areDocumentsFiledWithIndexPagination: z.boolean().optional(),
+
+        areDocumentsLegible: z.boolean().optional(),
+
+        isAppealMemoAnnexedForOtherSide: z.boolean().optional(),
+
+        isAppealMemoServedByPostCourier: z.boolean().optional(),
+
+        isVakalatnamaAuthorizationProper: z.boolean().optional(),
+
+        isContactOnRecord: z.boolean().optional(),
     })
     .strict();
+
+export const updateAppealScrutinySchema = z.object({
+    appealNumber: z.string().trim().min(1),
+    ...createAppealChecklistSchema.shape,
+});
 
 export const sendToHearingSchema = z
     .object({

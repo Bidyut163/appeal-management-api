@@ -67,6 +67,7 @@ enum RoleType {
 model Appeal {
   id          Int          @id @default(autoincrement())
   
+  appealNumber String?     @unique
   // ---------------- Appellant ----------------
   appellantName    String
 
@@ -212,14 +213,62 @@ enum RevertStatus {
   RESUBMITTED
 }
 
-model AppealChecklist  {
-  id Int @id @default(autoincrement())
+// model AppealChecklist  {
+//   id Int @id @default(autoincrement())
 
-  appealId Int    @unique
-  appeal   Appeal @relation(fields: [appealId], references: [id])
+//   appealId Int    @unique
+//   appeal   Appeal @relation(fields: [appealId], references: [id])
 
-  complaintNumber  String?
-  sectionNumber    String?
+//   complaintNumber  String?
+//   sectionNumber    String?
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+model AppealChecklist {
+  id        Int      @id @default(autoincrement())
+
+  appealId  Int      @unique
+  appeal    Appeal   @relation(fields: [appealId], references: [id], onDelete: Cascade)
+
+  complaintNumber String?
+  legalProvision  String?
+
+  isAppealCompetent             Boolean?
+  arePartiesAndAddressesProper  Boolean?
+  isCertifiedCopyFiled          Boolean?
+
+  orderDate                    DateTime?
+  communicationDate            DateTime?
+  certifiedCopyApplicationDate DateTime?
+  certifiedCopyReadyDate       DateTime?
+  certifiedCopyReceiptDate     DateTime?
+
+  onlineFilingDate        DateTime?
+  hardCopySubmissionDate  DateTime?
+
+  isHardCopySubmissionDelayed Boolean?
+  hardCopyDelayDays            Int?
+
+  isAppealWithinLimitation    Boolean?
+  isAppealFilingDelayed  Boolean?
+  appealFilingDelayDays  Int?
+
+  isCondonationApplicationFiled Boolean?
+
+  areFeesPaid            Boolean?
+  isPaymentReceiptFiled Boolean?
+  paymentDate            DateTime?
+
+  areDocumentsFiledWithIndexPagination Boolean?
+  areDocumentsLegible                   Boolean?
+
+  isAppealMemoAnnexedForOtherSide Boolean?
+  isAppealMemoServedByPostCourier Boolean?
+
+  isVakalatnamaAuthorizationProper Boolean?
+  isContactOnRecord                Boolean?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

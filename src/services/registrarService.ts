@@ -5,12 +5,12 @@ import { validateTransition } from '../utils/workflow.js';
 
 import * as z from 'zod';
 import type {
-    createAppealChecklistSchema,
     sendToHearingSchema,
+    updateAppealScrutinySchema,
 } from '../validators/appealSchemas.js';
 import { createAuditLogService } from './auditLogService.js';
 
-type CreateAppealChecklistInput = z.infer<typeof createAppealChecklistSchema>;
+type UpdateAppealScrutinyInput = z.infer<typeof updateAppealScrutinySchema>;
 type SendToHearingInput = z.infer<typeof sendToHearingSchema>;
 
 export const getWithRegistrarAppealsService = async () => {
@@ -95,35 +95,53 @@ export const revertAppealService = async (
     // return updatedAppeal;
 };
 
-export const createAppealChecklistService = async (
+export const updateAppealScrutinyService = async (
     appealId: number,
-    formData: CreateAppealChecklistInput,
+    formData: UpdateAppealScrutinyInput,
 ) => {
-    const appeal = await prismaClient.appeal.findFirst({
-        where: { id: appealId, status: AppealStatus.WITH_REGISTRAR },
-    });
+    return await prismaClient.$transaction(async (tx) => {
+        const appeal = await tx.appeal.findFirst({
+            where: { id: appealId, status: AppealStatus.WITH_REGISTRAR },
+        });
 
-    if (!appeal) {
-        throw new NotFoundError(
-            'Appeal not found or not eligible for checklist',
+        if (!appeal) {
+            throw new NotFoundError(
+                'Appeal not found or not eligible for checklist',
+            );
+        }
+
+        const existingChecklist = await tx.appealChecklist.findUnique({
+            where: { appealId },
+        });
+
+        if (existingChecklist)
+            throw new BadRequestError('Checklist already exists');
+
+        const { appealNumber, ...checklistData } = formData;
+
+        await tx.appeal.update({
+            where: { id: appealId },
+            data: {
+                appealNumber,
+            },
+        });
+
+        const checklistDataWithNulls = Object.fromEntries(
+            Object.entries(checklistData).map(([key, value]) => [
+                key,
+                value === undefined ? null : value,
+            ]),
         );
-    }
 
-    const existingChecklist = await prismaClient.appealChecklist.findUnique({
-        where: { appealId },
+        const checklist = await tx.appealChecklist.create({
+            data: {
+                ...checklistDataWithNulls,
+                appealId,
+            },
+        });
+
+        return checklist;
     });
-
-    if (existingChecklist)
-        throw new BadRequestError('Checklist already exists');
-
-    const checklist = await prismaClient.appealChecklist.create({
-        data: {
-            ...formData,
-            appealId,
-        },
-    });
-
-    return checklist;
 };
 
 export const sendAppealToHearingService = async (
