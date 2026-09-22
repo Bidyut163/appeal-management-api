@@ -245,15 +245,12 @@ export const createAppealChecklistSchema = z
         isAppealWithinLimitation: z.boolean().optional(),
 
         isAppealFilingDelayed: z.boolean().optional(),
-
         appealFilingDelayDays: z.number().int().nonnegative().optional(),
 
         isCondonationApplicationFiled: z.boolean().optional(),
+        objectionForCondonationDelay: z.string().trim().optional(),
 
         areFeesPaid: z.boolean().optional(),
-
-        isPaymentReceiptFiled: z.boolean().optional(),
-
         paymentDate: z.coerce.date().optional(),
 
         areDocumentsFiledWithIndexPagination: z.boolean().optional(),

@@ -256,9 +256,9 @@ model AppealChecklist {
   appealFilingDelayDays  Int?
 
   isCondonationApplicationFiled Boolean?
+  objectionForCondonationDelay  String?
 
   areFeesPaid            Boolean?
-  isPaymentReceiptFiled Boolean?
   paymentDate            DateTime?
 
   areDocumentsFiledWithIndexPagination Boolean?
