@@ -7,7 +7,7 @@ export const setAuthCookie = (res: Response, token: string) => {
         httpOnly: true,
         maxAge: oneDay,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
     });
 };
 
@@ -22,6 +22,6 @@ export const clearAuthCookie = (res: Response) => {
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
     });
 };
