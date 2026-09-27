@@ -2,7 +2,7 @@ import express from 'express';
 import type { Express, Request, Response } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
-import { PORT } from './secrets.js';
+import { FRONTEND_URL, PORT } from './secrets.js';
 import cookieParser from 'cookie-parser';
 
 // router
@@ -23,7 +23,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use(
     cors({
-        origin: 'http://localhost:3000',
+        origin: FRONTEND_URL,
         credentials: true,
     }),
 );
@@ -44,6 +44,6 @@ app.use('/{*splat}', (req: Request, res: Response) => {
 
 app.use(errorHandlerMiddleware);
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log('Server running on port:', PORT);
 });
