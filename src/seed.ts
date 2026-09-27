@@ -181,7 +181,18 @@ async function main() {
         create: {
             appealId: appeal.id,
             complaintNumber: '231302',
-            sectionNumber: '44',
+            legalProvision: 'Section 44',
+            isAppealCompetent: true,
+            arePartiesAndAddressesProper: true,
+            isCertifiedCopyFiled: true,
+            isAppealWithinLimitation: true,
+            areFeesPaid: true,
+            areDocumentsFiledWithIndexPagination: true,
+            areDocumentsLegible: true,
+            isAppealMemoAnnexedForOtherSide: true,
+            isAppealMemoServedByPostCourier: true,
+            isVakalatnamaAuthorizationProper: true,
+            isContactOnRecord: true,
         },
     });
 
